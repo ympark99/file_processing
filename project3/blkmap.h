@@ -7,28 +7,25 @@
 #define	SECTOR_SIZE		512			
 #define	SPARE_SIZE		16			
 #define	PAGE_SIZE		(SECTOR_SIZE+SPARE_SIZE)
-#define 	SECTORS_PER_PAGE	1
-#define	PAGES_PER_BLOCK		32					// ¼öÁ¤ °¡´É
+#define SECTORS_PER_PAGE	1
+#define	PAGES_PER_BLOCK		4				// ìˆ˜ì • ê°€ëŠ¥
 #define	SECTORS_PER_BLOCK	(SECTORS_PER_PAGE*PAGES_PER_BLOCK)
 #define	BLOCK_SIZE		(PAGE_SIZE*PAGES_PER_BLOCK)
-#define	BLOCKS_PER_DEVICE	1024					// ¼öÁ¤ °¡´É
+#define	BLOCKS_PER_DEVICE	16				// ìˆ˜ì • ê°€ëŠ¥
 #define	DEVICE_SIZE		(BLOCK_SIZE*BLOCKS_PER_DEVICE)
-#define	DATABLKS_PER_DEVICE	(BLOCKS_PER_DEVICE - 1)			// spare block·Î¼­ ºí·Ï ÇÏ³ª¸¦ »ç¿ë
+#define	DATABLKS_PER_DEVICE	(BLOCKS_PER_DEVICE - 1)	// spare blockë¡œì„œ ë¸”ë¡ í•˜ë‚˜ë¥¼ ì‚¬ìš©
+#define DATAPAGES_PER_DEVICE (DATABLKS_PER_DEVICE * PAGES_PER_BLOCK) // ë°ì´í„° ì €ì¥í•  ìˆ˜ ìˆëŠ” ì‹¤ì œ page ìˆ˜
 //
-// ÇÊ¿äÇÏ¸é »ó¼ö¸¦ Ãß°¡ÇØ¼­ »ç¿ë °¡´ÉÇÔ
-// 
-
-//
-// flash memoryÀÇ spare area¸¦ ´Ù·ç±â À§ÇÑ ±¸Á¶Ã¼
+// flash memoryì˜ spare areaë¥¼ ë‹¤ë£¨ê¸° ìœ„í•œ êµ¬ì¡°ì²´
 //
 typedef struct
 {
-	int lsn;			// page¿¡ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ ¶§ spare area¿¡ lsnµµ °°ÀÌ ÀúÀåÇÔ
+	int lsn;			// pageì— ë°ì´í„°ë¥¼ ì €ì¥í•  ë•Œ spare areaì— lsnë„ ê°™ì´ ì €ì¥í•¨
 	char dummy[SPARE_SIZE - 4];
 } SpareData;
 
 //
-// FTLÀÌ °ü¸®ÇÏ´Â address mapping tableÀ» À§ÇÑ ±¸Á¶Ã¼
+// FTLì´ ê´€ë¦¬í•˜ëŠ” address mapping tableì„ ìœ„í•œ êµ¬ì¡°ì²´
 //
 typedef struct
 {
