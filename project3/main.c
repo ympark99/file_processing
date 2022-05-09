@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -6,7 +6,13 @@
 
 FILE *devicefp;
 
-int main( )
+void ftl_open();
+void ftl_write(int lsn, char *sectorbuf);
+void ftl_read(int lsn, char *sectorbuf);
+void print_addrmaptbl();
+
+// for ftl.c test
+int main(int argc, char *argv[])
 {
 	// 아래 변수는 테스트할 때 필요하면 사용하기 바람
 	char sectorbuf[SECTOR_SIZE], *blockbuf;
@@ -39,6 +45,32 @@ int main( )
 	// 채점할 때 이 부분에 테스트 코드를 심어서 합니다. Flash memory에 대한 데이터의 읽기 및 쓰기가
 	// 올바르게 동작하는지를 테스트하고, 필요하면 다른 부분도 검사를 합니다.
 	//
+	
+	// test code
+	/*
+	memset((void*)sectorbuf,'0',SECTOR_SIZE);
+	ftl_write(0,sectorbuf);
+	memset((void*)sectorbuf,'0',SECTOR_SIZE);
+	ftl_write(0,sectorbuf);
+	memset((void*)sectorbuf,'0',SECTOR_SIZE);
+	ftl_write(0,sectorbuf);
+	memset((void*)sectorbuf,'0',SECTOR_SIZE);
+	ftl_write(0,sectorbuf);
+	memset((void*)sectorbuf,'0',SECTOR_SIZE);
+	ftl_write(0,sectorbuf);
+
+
+
+	memset((void*)sectorbuf,'50',SECTOR_SIZE);
+	ftl_write(50,sectorbuf);
+	memset((void*)sectorbuf,'50',SECTOR_SIZE);
+	ftl_write(50,sectorbuf);
+	memset((void*)sectorbuf,'50',SECTOR_SIZE);
+	ftl_write(50,sectorbuf);
+	memset((void*)sectorbuf,'50',SECTOR_SIZE);
+	ftl_write(50,sectorbuf);
+	*/
+	print_addrmaptbl();
 
 	free(blockbuf);
 	fclose(devicefp);
