@@ -109,17 +109,7 @@ void printRecord(const STUDENT *s)
 }
 
 void pack(char *recordbuf, const STUDENT *s){
-	// memset(recordbuf, (char)0xFF, RECORD_SIZE);
-	// strcat(recordbuf, s->id);
-	// strcat(recordbuf, "#");
-	// strcat(recordbuf, s->name);
-	// strcat(recordbuf, "#");
-	// strcat(recordbuf, s->dept);
-	// strcat(recordbuf, "#");
-	// strcat(recordbuf, s->addr);
-	// strcat(recordbuf, "#");
-	// strcat(recordbuf, s->email);
-	sprintf(recordbuf,"%s#%s#%s#%s#%s#",s->id,s->name,s->dept,s->addr,s->email);
+	sprintf(recordbuf,"%s#%s#%s#%s#%s#",s->id, s->name, s->dept, s->addr, s->email);
 }
 
 void unpack(const char *recordbuf, STUDENT *s){
@@ -149,7 +139,6 @@ int readRecord(FILE *fp, STUDENT *s, int rrn){
 		return 0;
 	}
     else{
-		// unpack(recordbuf, s);
 		return 1;
 	}
 }
@@ -180,13 +169,11 @@ int appendRecord(FILE *fp, char *id, char *name, char *dept, char *addr, char *e
 	if(readRecord(fp, &s, 0) == 0){
 		records = 1;
 		reserved = -1;
-		// char *header_buf = malloc(sizeof(char) * HEADER_SIZE);
 		memcpy(header_buf, &records, 4);
 		memcpy(header_buf+4, &reserved, 4);
 
 		fseek(fp, 0, SEEK_SET); // 헤더 크기 이동 (rrn 0)
 		fwrite(header_buf, sizeof(char) * RECORD_SIZE, 1, fp); // 헤더 써주기
-		// free(header_buf);
 	}
 
 	fseek(fp, 0, SEEK_SET);

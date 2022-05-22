@@ -17,10 +17,4 @@ typedef struct _STUDENT
 	char email[21];		// 이메일 주소
 } STUDENT;
 
-// typedef struct _Header
-// {
-// 	int records;		//전체 record 수
-// 	int reserved;	// 예약 공간
-// } Header;
-
 #endif
