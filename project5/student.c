@@ -310,7 +310,15 @@ int deleteRecord(FILE *fp, FIELD f, char *keyval){
 				return -1;
 
 			// todo : 삭제 레코드 리스트 관리
+			// 해더 파일-> 예약 공간으로 이동
+			fseek(fp, 4, SEEK_SET);
 
+			char *reserve_buf = malloc(sizeof(char) * 4); // 삭제할 레코드
+			memcpy(reserve_buf, &i+1, 4); // 삭제 rrn, 헤더 포함하므로 +1
+			fwrite(reserve_buf, sizeof(char) * 4, 1, fp); // 삭제 rrn 써주기
+			free(reserve_buf);
+
+			// todo : 삭제된 레코드는 검색 안되게
 			break;
 		}
 	}
@@ -318,21 +326,7 @@ int deleteRecord(FILE *fp, FIELD f, char *keyval){
 	printRecord(&s_search);
 
 	free(header_buf);
-//    memcpy(firstpage+2,&searchedPageNum,2);
-//     memcpy(firstpage+4,&searchedRecordNum,2);
-  
-//    writePage(fp,firstpage,-1); //update header page
 
-//     readPage(fp,pagebuf,searchedPageNum); 
-//     short offset;
-//     memcpy(&offset,pagebuf+4*searchedRecordNum,2);
-//     char deletemark='*';
-
-//     memcpy(pagebuf+HEADER_SIZE+offset,&deletemark,1);
-//     memcpy(pagebuf+HEADER_SIZE+offset+1,&latest_deletePage,2);
-//     memcpy(pagebuf+HEADER_SIZE+offset+1+2,&latest_deleteRecord,2);
-   
-//     writePage(fp,pagebuf,searchedPageNum);
 }
 
 int insertRecord(FILE *fp, char *id, char *name, char *dept, char *addr, char *email){
