@@ -216,7 +216,7 @@ int appendRecord(FILE *fp, char *id, char *name, char *dept, char *addr, char *e
 	records++; // 전체 개수 1 추가
 	memcpy(header_buf, &records, 4);
 	fseek(fp, 0, SEEK_SET); // (rrn 0) 이동
-	fwrite(header_buf, sizeof(char) * 4, 1, fp); // 헤더 써주기
+	fwrite(header_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 헤더 써주기, todo : ??
 	free(header_buf);
 }
 
@@ -292,7 +292,7 @@ int deleteRecord(FILE *fp, FIELD f, char *keyval){
 	fread(header_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 어디에 쓸지 읽기
 	memcpy(&records, header_buf, 4); // 레코드 개수 가져오기
 	memcpy(&reserved, header_buf + 4, 4); // 최근 삭제 rrn 가져오기
-	printf("record : %d reser : %d\n", records, reserved);
+	printf("header record : %d rrn : %d\n", records, reserved);
 
 	STUDENT s_search; // 찾은 학생 (최대 records 크기이므로)
 
@@ -307,26 +307,21 @@ int deleteRecord(FILE *fp, FIELD f, char *keyval){
 
 			fseek(fp, backup, SEEK_SET); // 삭제할 레코드 위치로 이동
 			char del_mark = '*'; // 삭제할 마크
-			char *recent_rrn = malloc(sizeof(char) * 4); // 4바이트 최근 삭제레코드 번호
-			memcpy(recent_rrn, &reserved, 4);
 
 			if(fwrite(&del_mark, 1, 1, fp) == 0) // 삭제 마크 저장
 				return -1;
-			printf("pre rrn : %s\n", recent_rrn);
-			if(fwrite(&recent_rrn, 4, 1, fp) == 0) // 이전 rrn 저장
+			if(fwrite(&reserved, 4, 1, fp) == 0) // 이전 rrn 저장
 				return -1;
-			free(recent_rrn);
 
-			// 해더 파일-> 예약 공간으로 이동
-			fseek(fp, 4, SEEK_SET);
-
+			int new_rrn = i + 1;
 			// 최근 삭제 rrn 갱신
-			char *reserve_buf = malloc(sizeof(char) * 4); // 삭제할 레코드
-			memcpy(reserve_buf, &i+1, 4); // 최근 삭제 rrn 갱신, 헤더 포함하므로 +1
-			printf("new rrn : %s\n", reserve_buf);
-			fwrite(reserve_buf, sizeof(char) * 4, 1, fp); // 삭제 rrn 써주기
-			free(reserve_buf);
+			char *newhead_buf = malloc(sizeof(char) * HEADER_SIZE); // 최근삭제rrn으로 갱신할 헤더
+			memcpy(newhead_buf, &records, 4);
+			memcpy(newhead_buf+4, &new_rrn, 4); // 최근 삭제 rrn 갱신, 헤더 포함하므로 +1
 
+			fseek(fp, 0, SEEK_SET);
+			fwrite(newhead_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 새로운 헤더 써주기
+			free(newhead_buf);
 			break;
 		}
 	}
