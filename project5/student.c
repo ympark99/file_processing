@@ -7,6 +7,8 @@
 
 char recordbuf[RECORD_SIZE];
 
+// todo : 검색기능 삭제는 x?
+
 //
 // 함수 readRecord()는 학생 레코드 파일에서 주어진 rrn에 해당하는 레코드를 읽어서 
 // recordbuf에 저장하고, 이후 unpack() 함수를 호출하여 학생 타입의 변수에 레코드의
@@ -132,6 +134,9 @@ void main(int argc, char *argv[])
 		deleteRecord(fp, field, keyval);
 		free(tmp);
 	}
+	else if(!strcmp(argv[1], "-i")){ // insert
+		insertRecord(fp, argv[3], argv[4], argv[5], argv[6], argv[7]);
+	}
 	fclose(fp);
 	exit(0);
 }
@@ -216,8 +221,9 @@ int appendRecord(FILE *fp, char *id, char *name, char *dept, char *addr, char *e
 	records++; // 전체 개수 1 추가
 	memcpy(header_buf, &records, 4);
 	fseek(fp, 0, SEEK_SET); // (rrn 0) 이동
-	fwrite(header_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 헤더 써주기, todo : ??
+	fwrite(header_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 헤더 써주기
 	free(header_buf);
+	return 1;
 }
 
 void searchRecord(FILE *fp, FIELD f, char *keyval){
@@ -292,7 +298,6 @@ int deleteRecord(FILE *fp, FIELD f, char *keyval){
 	fread(header_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 어디에 쓸지 읽기
 	memcpy(&records, header_buf, 4); // 레코드 개수 가져오기
 	memcpy(&reserved, header_buf + 4, 4); // 최근 삭제 rrn 가져오기
-	printf("header record : %d rrn : %d\n", records, reserved);
 
 	STUDENT s_search; // 찾은 학생 (최대 records 크기이므로)
 
@@ -330,6 +335,63 @@ int deleteRecord(FILE *fp, FIELD f, char *keyval){
 }
 
 int insertRecord(FILE *fp, char *id, char *name, char *dept, char *addr, char *email){
+	STUDENT s;
+	strcpy(s.id, id);
+	strcpy(s.name, name);
+	strcpy(s.dept, dept);
+	strcpy(s.addr, addr);
+	strcpy(s.email, email);
 
+	int records;
+	int reserved;	
+	
+	char *header_buf = malloc(sizeof(char) * HEADER_SIZE); // 헤더 레코드
+	// 아무것도 없다면 헤더 레코드 생성
+	if(readRecord(fp, &s, 0) == 0){
+		records = 1;
+		reserved = -1; // 삭제 리스트 헤드 없으므로 -1 저장
+		memcpy(header_buf, &records, 4);
+		memcpy(header_buf+4, &reserved, 4);
 
+		fseek(fp, 0, SEEK_SET); // 헤더 크기 이동 (rrn 0)
+		fwrite(header_buf, sizeof(char) * RECORD_SIZE, 1, fp); // 헤더 써주기
+	}
+
+	// 헤더 레코드 읽기
+	fseek(fp, 0, SEEK_SET);
+	fread(header_buf, sizeof(char) * HEADER_SIZE, 1, fp);
+	memcpy(&records, header_buf, 4);
+	memcpy(&reserved, header_buf+4, 4);
+
+	// 삭제 레코드 있는 경우 삭제 레코드에 쓰기
+	if(reserved != -1){
+		fseek(fp, HEADER_SIZE + (reserved-1-1) * RECORD_SIZE, SEEK_SET); // 해당 레코드로 이동
+		int next_rrn; // 업데이트할 rrn
+
+		fseek(fp, 1, SEEK_CUR); // *건너뛰고
+		char *rrn_buf = malloc(sizeof(char) * 4); // 헤더 레코드
+		fread(rrn_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 어디에 쓸지 읽기
+		memcpy(&next_rrn, rrn_buf, 4); // 업데이트할 rrn
+
+		writeRecord(fp, &s, reserved - 1); // 덮어쓰기
+
+		// 헤더 rrn 업데이트
+		memcpy(header_buf+4, &next_rrn, 4);
+		fseek(fp, 0, SEEK_SET); // (rrn 0) 이동
+		fwrite(header_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 헤더 써주기		
+		free(rrn_buf);
+		return 1;
+	}
+	else{ // 그 이외의 경우	
+		fseek(fp, 0, SEEK_SET);
+		fread(header_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 헤더 레코드 읽기
+		memcpy(&records, header_buf, 4);
+		writeRecord(fp, &s, records); // 레코드 추가
+		records++; // 전체 개수 1 추가
+		memcpy(header_buf, &records, 4);
+		fseek(fp, 0, SEEK_SET); // (rrn 0) 이동
+		fwrite(header_buf, sizeof(char) * HEADER_SIZE, 1, fp); // 헤더 써주기
+		free(header_buf);
+		return 1;
+	}
 }
